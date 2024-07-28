@@ -1,0 +1,110 @@
+import random
+
+# Define a class for a card
+class Card:
+    def __init__(self, suit, value):
+        self.suit = suit
+        self.value = value
+
+    def __repr__(self):
+        return f"{self.value} of {self.suit}"
+
+# Define a class for a deck of cards
+class Deck:
+    def __init__(self):
+        self.cards = []
+        self.suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+        self.values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
+
+        for suit in self.suits:
+            for value in self.values:
+                self.cards.append(Card(suit, value))
+
+    def shuffle(self):
+        random.shuffle(self.cards)
+
+    def deal(self):
+        return self.cards.pop()
+
+# Define a class for a hand of cards
+class Hand:
+    def __init__(self):
+        self.cards = []
+
+    def add_card(self, card):
+        self.cards.append(card)
+
+    def get_value(self):
+        value = 0
+        aces = 0
+
+        for card in self.cards:
+            if card.value.isnumeric():
+                value += int(card.value)
+            else:
+                if card.value == 'Ace':
+                    aces += 1
+                    value += 11
+                else:
+                    value += 10
+
+        # Adjust for Aces
+        while value > 21 and aces:
+            value -= 10
+            aces -= 1
+
+        return value
+
+    def __repr__(self):
+        return f"Hand value: {self.get_value()} with cards: {self.cards}"
+
+# Define a class for the game
+class Game:
+    def __init__(self):
+        self.deck = Deck()
+        self.deck.shuffle()
+        self.player_hand = Hand()
+        self.dealer_hand = Hand()
+
+    def play(self):
+        # Deal initial cards
+        for _ in range(2):
+            self.player_hand.add_card(self.deck.deal())
+            self.dealer_hand.add_card(self.deck.deal())
+
+        print("Your hand:", self.player_hand)
+        print("Dealer's up card:", self.dealer_hand.cards[0])
+
+        # Player's turn
+        while True:
+            action = input("Do you want to 'hit' or 'stand'? ")
+            if action.lower() == 'hit':
+                self.player_hand.add_card(self.deck.deal())
+                print("Your hand:", self.player_hand)
+                if self.player_hand.get_value() > 21:
+                    print("You busted! Dealer wins!")
+                    return
+            elif action.lower() == 'stand':
+                break
+            else:
+                print("Invalid input. Please try again.")
+
+        # Dealer's turn
+        while self.dealer_hand.get_value() < 17:
+            self.dealer_hand.add_card(self.deck.deal())
+
+        print("Dealer's hand:", self.dealer_hand)
+
+        # Determine winner
+        if self.dealer_hand.get_value() > 21:
+            print("Dealer busted! You win!")
+        elif self.dealer_hand.get_value() < self.player_hand.get_value():
+            print("Your hand is higher! You win!")
+        elif self.dealer_hand.get_value() > self.player_hand.get_value():
+            print("Dealer's hand is higher! Dealer wins!")
+        else:
+            print("It's a tie!")
+
+# Run the game
+game = Game()
+game.play()
